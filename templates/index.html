@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filter App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('static/photo_bck.jpg');
+            color: #333;
+            overflow: hidden; /* Hide overflow to prevent scrollbars */
+        }       
+        
+        .container {
+            max-width: 600px;
+            margin-left:auto;
+            margin-right: auto;
+            margin-top: 15px;
+            padding: 20px;
+            background-color: white; /* Add some transparency */
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative; /* Position relative to allow z-index to work */
+            z-index: 1; /* Ensure container is above the video */
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 30px;
+            color: #555;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input[type="file"], select, input[type="number"] {
+            margin-bottom: 15px;
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        #angleInput, #parameters {
+            display: none;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button[type="submit"]:hover {
+            background-color: blue;
+        }
+        #uploadedImageContainer {
+            max-width: 100%;
+            height: auto;
+            display: none; /* Initially hide the container */
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Photo Editor</h1>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" id="fileInput" accept="image/*">
+            <select name="filter" id="filter">
+                <option value="" disabled selected>Select one operation to proceed</option>
+                <option value="grayscale">Grayscale</option>
+                <option value="invert">Invert</option>
+                <option value="blur">Blur</option>
+                <option value="rotate">Rotate</option>
+                <option value="crop">Crop</option>
+                <option value="emboss">Emboss</option>
+            </select>
+
+            <!-- Angle input field -->
+            <div id="angleInput">
+                <label for="angle">Angle (degrees) :</label>
+                <input type="number" name="angle" id="angle" value="0">
+            </div>
+            <!-- Parameters for crop filter -->
+            <div id="parameters">
+                <label for="right">Width:</label>
+                <input type="number" name="right" id="right" value="0">
+                <label for="lower">Height:</label>
+                <input type="number" name="lower" id="lower" value="0">
+            </div>
+            <button type="submit">Apply Filter</button>
+        </form>
+        <div id="uploadedImageContainer"></div>
+    </div>
+
+    <script>
+    window.onload = function() {
+        var fileInput = document.getElementById('fileInput');
+        var uploadedImageContainer = document.getElementById('uploadedImageContainer');
+        var form = document.getElementById('uploadForm');
+        var angleInput = document.getElementById('angleInput');
+        var parameters = document.getElementById('parameters');
+
+        form.addEventListener('submit', function(event) {
+            var selectedFilter = document.getElementById('filter').value;
+            if (!selectedFilter || selectedFilter === "") {
+                event.preventDefault(); // Prevent form submission if no filter is selected
+                alert("Please select a filter option.");
+            }
+        });
+
+        fileInput.addEventListener('change', function() {
+            var file = fileInput.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = new Image();
+                    img.src = e.target.result;
+                    img.style.maxWidth = "100%";
+                    img.style.height = "100%";
+                    uploadedImageContainer.innerHTML = ''; // Clear previous image if any
+                    uploadedImageContainer.appendChild(img);
+                    uploadedImageContainer.style.display = 'block'; // Show the container
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Show/hide input fields based on selected filter
+        document.getElementById('filter').addEventListener('change', function() {
+            var selectedFilter = this.value;
+            if (selectedFilter === "rotate") {
+                angleInput.style.display = 'block';
+                parameters.style.display = 'none';
+            } else if (selectedFilter === "crop") {
+                angleInput.style.display = 'none';
+                parameters.style.display = 'block';
+            } else {
+                angleInput.style.display = 'none';
+                parameters.style.display = 'none';
+            }
+        });
+    };
+</script>
+
+</body>
+</html>
